@@ -1,10 +1,11 @@
-const jsforce = require("jsforce");
-const dotenv = require("dotenv");
-const format = require("string-format");
+import * as jsforce from "jsforce";
+import * as dotenv from "dotenv";
+import * as stringFormat from "string-format";
 
 dotenv.config();
+stringFormat.extend(String.prototype, {});
 
-let alldone = undefined;
+let alldone : any = undefined;
 global.setInterval(() => {
     if (alldone) {
         if (typeof alldone === "boolean") {
@@ -16,8 +17,8 @@ global.setInterval(() => {
     }
 }, 1000);
 
-const conn = new jsforce.Connection();
-conn.login(process.env.SF_USERNAME, `${process.env.SF_PASSWORD}${process.env.SF_SECURITY_TOKEN}`).then(userinfo => {
+const conn = new jsforce.Connection({});
+conn.login(process.env.SF_USERNAME as string, `${process.env.SF_PASSWORD}${process.env.SF_SECURITY_TOKEN}`).then(userinfo => {
     console.log(`Logged into org as user (${userinfo.id})...`);
     const streams = {
         "/event/LoginEventStream": {
@@ -35,17 +36,20 @@ conn.login(process.env.SF_USERNAME, `${process.env.SF_PASSWORD}${process.env.SF_
         "/event/ListViewEventStream": true
     }
     Object.keys(streams).forEach(key => {
-        const obj = (() => {
+        const obj : object = (() => {
             if (typeof streams[key] === "object") return streams[key];
             return {
                 "replayId": -1,
                 "pattern": `At {payload.EventDate} {payload.Username} ({payload.UserId}) did something that caused an event in ${key}`
             }
         })()
+        //@ts-ignore
         conn.streaming.createClient([
+            //@ts-ignore
             new jsforce.StreamingExtension.Replay(key, obj.replayId)
         ]).subscribe(key, msg => {
-            console.log(format(obj.pattern, msg));
+            //@ts-ignore
+            console.log(obj.pattern.format(msg));
         })
     })
     
