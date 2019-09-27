@@ -37,7 +37,8 @@ module.exports = function(grunt) {
                 src: ["**/*.ts", "!node_modules/**/*.ts"],
                 outDir: "server-dist",
                 options: {
-                    rootDir: "src"
+                    rootDir: "src",
+                    esModuleInterop: true
                 }
             }
         },
