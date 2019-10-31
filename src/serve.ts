@@ -7,6 +7,7 @@ import exphbs from "express-handlebars";
 import ensureLogin from "connect-ensure-login";
 import session from "express-session";
 import bodyParser from "body-parser";
+import * as path from 'path';
 
 // read env variables from .env
 dotenv.config();
@@ -21,6 +22,7 @@ app.use(session({
 app.use(bodyParser.urlencoded({
     extended: true
 }))
+app.use(express.static(path.join(__dirname, "..", "public")))
 
 // configure express for authentication using salesforce
 app.use(passport.initialize());
@@ -56,7 +58,7 @@ app.get('/logout', (req, res) => {
 });
 
 app.get("/oauth/callback", passport.authenticate('salesforce', { failureRedirect: '/login' }), (req, res) => {
-	res.redirect('/');
+	res.redirect('/home');
 });
 
 app.get("/", (req, res) => {
