@@ -5,12 +5,22 @@ import {Strategy} from "passport-salesforce-oauth2";
 import * as dotenv from "dotenv";
 import exphbs from "express-handlebars";
 import ensureLogin from "connect-ensure-login";
+import session from "express-session";
+import bodyParser from "body-parser";
 
 // read env variables from .env
 dotenv.config();
 
 // create app
 const app = express();
+app.use(session({
+    secret: process.env.SESSION_SECRET || 'keyboard cat', 
+    resave: true, 
+    saveUninitialized: true
+}));
+app.use(bodyParser.urlencoded({
+    extended: true
+}))
 
 // configure express for authentication using salesforce
 app.use(passport.initialize());
@@ -40,8 +50,9 @@ app.get("/oauth/callback", passport.authenticate('salesforce', { failureRedirect
 });
 
 app.get("/", ensureLogin.ensureLoggedIn(), (req, res) => {
-    return res.render("root");
+    return res.render("root", {"user": req.user});
 });
 
 // listen
+console.log(`Listening on ${process.env.PORT || 8080}`);
 app.listen(process.env.PORT || 8080);
