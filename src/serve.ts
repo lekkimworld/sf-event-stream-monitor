@@ -45,12 +45,26 @@ app.set('view engine', 'handlebars');
 
 app.get('/login', passport.authenticate('salesforce'));
 
+app.get('/logout', (req, res) => {
+    const callback = (err:Error|undefined) => {
+
+    }
+    if (req.session) {
+        req.session.destroy(callback);
+    }
+    res.redirect("/");
+});
+
 app.get("/oauth/callback", passport.authenticate('salesforce', { failureRedirect: '/login' }), (req, res) => {
 	res.redirect('/');
 });
 
-app.get("/", ensureLogin.ensureLoggedIn(), (req, res) => {
-    return res.render("root", {"user": req.user});
+app.get("/", (req, res) => {
+    return res.render("root");
+});
+
+app.get("/home", ensureLogin.ensureLoggedIn(), (req, res) => {
+    return res.render("home", {"user": req.user});
 });
 
 // listen
