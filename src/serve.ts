@@ -83,7 +83,7 @@ app.use((req, res, next) => {
         const connection = new jsforce.Connection({
             //@ts-ignore
             "accessToken": req.user.oauth.accessToken,
-            "instanceUrl": "https://eu25.salesforce.com"
+            "instanceUrl": process.env.SF_INSTANCE_URL
         });
         sessionConnections.set(req.session.id, connection);
     }
