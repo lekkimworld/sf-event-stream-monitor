@@ -1,1 +1,31 @@
-Nothing like home... {{user.id}}
+ <form class="form-inline">
+    <div class="form-group">
+        <label for="topic">Topic:&nbsp;</label>
+        <input type="text" class="form-control" id="topic">
+    </div>
+    <div class="col-md-4">
+        <button type="button" class="btn btn-primary btn-lg" id="play">
+            <span class="fa fa-play fa-1x color-white" aria-hidden="true"></span>
+        </button>
+        <button type="button" class="btn btn-primary btn-lg" id="pause">
+            <span class="fa fa-pause fa-1x color-white" aria-hidden="true"></span>
+        </button>
+    </div>
+</form>
+<div id="ws_events" class="mt-2"></div>
+
+<script>
+    document.querySelector("#ws_events").addEventListener("click", (ev) => {
+        handleEventClick(ev.target.id);
+    })
+    document.querySelector("#play").addEventListener("click", ev => {
+        setDisplayState("play");
+        ev.preventDefault = true;
+        return false;
+    })
+    document.querySelector("#pause").addEventListener("click", ev => {
+        setDisplayState("pause");
+        ev.preventDefault = true;
+    })
+    listenToWebSocket();
+</script>

@@ -19,6 +19,7 @@ global.setInterval(() => {
 
 const conn = new jsforce.Connection({});
 conn.login(process.env.SF_USERNAME as string, `${process.env.SF_PASSWORD}${process.env.SF_SECURITY_TOKEN}`).then(userinfo => {
+    console.log(conn)
     console.log(`Logged into org as user (${userinfo.id})...`);
     const streams = {
         "/event/LoginEventStream": {
@@ -47,7 +48,9 @@ conn.login(process.env.SF_USERNAME as string, `${process.env.SF_PASSWORD}${proce
         conn.streaming.createClient([
             //@ts-ignore
             new jsforce.StreamingExtension.Replay(key, obj.replayId)
-        ]).subscribe(key, msg => {
+        ]).subscribe((key:string, msg:any) => {
+            console.log(key);
+            console.log(msg);
             //@ts-ignore
             console.log(obj.pattern.format(msg));
         })

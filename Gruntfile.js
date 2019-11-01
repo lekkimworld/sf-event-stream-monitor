@@ -19,12 +19,15 @@ module.exports = function(grunt) {
                         "cwd": "src",
                         "src": "**/*.js",
                         "dest": "server-dist"
+                    },
+                    {
+                        "expand": true,
+                        "cwd": "dev",
+                        "src": "**/*.js",
+                        "dest": "public"
                     }
                 ]
             }
-        },
-        browserify: {
-            'public/js/index.js': ['dev/js/ui/**.js']
         },
         rework: {
             'public/css/styles.css': ['dev/css/**.css'],
@@ -57,5 +60,5 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-contrib-watch');
     grunt.loadNpmTasks("grunt-ts");
 
-    grunt.registerTask('default', ['clean', 'copy', 'browserify', 'rework', 'ts']);
+    grunt.registerTask('default', ['clean', 'copy', 'rework', 'ts']);
 };

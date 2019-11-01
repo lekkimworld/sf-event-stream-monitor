@@ -1,7 +1,38 @@
 body {
-    padding-top: 4.0rem;
+  padding-top: 4.0rem;
 }
 
 .color-white {
-    color: #fff;
+  color: #fff;
+}
+
+.event-container {
+  border: 1px solid black;
+  border-radius: 5px;
+  background-color: #efefef;
+}
+
+.event-details {
+  background-color: #fff;
+}
+
+pre {
+  clear: both;
+	width: 100%;
+	padding: 0;
+	margin: 0;
+	overflow: auto;
+	overflow-y: hidden;
+	font-size: 12px;
+	line-height: 20px;
+	background: #efefef;
+	border: 1px solid #777;
+	background: url(lines.png) repeat 0 0;
+}
+pre code {
+	color: #333;
+}
+
+.event-expandable {
+  width: 100%;
 }
