@@ -15,8 +15,27 @@ import * as jsforce from "jsforce";
 import uuid from "uuid/v1";
 import * as stringFormat from "string-format";
 
+const streams = {
+    "/event/LoginEventStream": {
+        "replayId": -1,
+        "pattern": "At {payload.EventDate} {payload.Username} ({payload.UserId}) logged IN with a {payload.SessionLevel} session using {payload.Browser}"
+    },
+    "/event/LogoutEventStream": {
+        "replayId": -1,
+        "pattern": "At {payload.EventDate} {payload.Username} ({payload.UserId}) logged OUT"
+    },
+    "/event/LightningUriEventStream": {
+        "replayId": -1,
+        "pattern": "At {payload.EventDate} {payload.Username} ({payload.UserId}) opened record w/ ID: {payload.RecordId}"
+    },
+    "/event/ListViewEventStream": true
+}
+const sessionConnections = new Map<string,jsforce.Connection>();
+
 // read env variables from .env
 dotenv.config();
+
+// extend stering with formatting
 stringFormat.extend(String.prototype, {});
 
 // create app
@@ -56,6 +75,22 @@ app.use(passport.session());
 app.engine('handlebars', exphbs({defaultLayout: 'main'}));
 app.set('view engine', 'handlebars');
 
+// handle connection back to salesforce
+app.use((req, res, next) => {
+    //@ts-ignore
+    if (req.user && req.session && !sessionConnections.has(req.session.id)) {
+        //@ts-ignore
+        const connection = new jsforce.Connection({
+            //@ts-ignore
+            "accessToken": req.user.oauth.accessToken,
+            "instanceUrl": "https://eu25.salesforce.com"
+        });
+        sessionConnections.set(req.session.id, connection);
+    }
+    next();
+})
+
+
 app.get('/login', passport.authenticate('salesforce'));
 
 app.get('/logout', (req, res) => {
@@ -80,36 +115,33 @@ app.get("/home", ensureLogin.ensureLoggedIn(), (req, res) => {
     return res.render("home", {"user": req.user});
 });
 
-app.get("/api/events", ensureLogin.ensureLoggedIn(), (req, res) => {
-	// get websockt and initialize stream
+app.get("/api/subscribe/:topic", ensureLogin.ensureLoggedIn(), (req, res) => {
+    const topic = Buffer.from(req.params.topic, "base64").toString();
+
+    // get websocket and initialize stream
 	const wsController = websocket.getInstance();
-	const stream = wsController.initializeStream();
+    const stream = wsController.getOrInitializeStream();
+    //@ts-ignore
+    const conn = sessionConnections.get(req.session.id);
+    //@ts-ignore
+    conn.streaming.topic(topic).subscribe((msg:jsforce.StreamingMessage) => {
+        //@ts-ignore
+        const txt = `At ${msg.payload.CreatedDate} we detected a ${topic} event`;
+        //@ts-ignore
+        stream.write({"index": uuid(), "msg": txt, "attributes": msg.payload});
+    })
+    res.type("json").send({"status": "ok"});
+})
+
+app.get("/api/events", ensureLogin.ensureLoggedIn(), (req, res) => {
+	// get websocket and initialize stream
+	const wsController = websocket.getInstance();
+    const stream = wsController.getOrInitializeStream();
+    //@ts-ignore
+    const conn = sessionConnections.get(req.session.id);
 
 	// listen to topic and stream data to websocket
-	let number = 0;
-	//@ts-ignore
-	const conn = new jsforce.Connection({
-		//@ts-ignore
-		"accessToken": req.user.oauth.accessToken,
-		"instanceUrl": "https://eu25.salesforce.com"
-	});
-	
-	const streams = {
-        "/event/LoginEventStream": {
-            "replayId": -1,
-            "pattern": "At {payload.EventDate} {payload.Username} ({payload.UserId}) logged IN with a {payload.SessionLevel} session using {payload.Browser}"
-        },
-        "/event/LogoutEventStream": {
-            "replayId": -1,
-            "pattern": "At {payload.EventDate} {payload.Username} ({payload.UserId}) logged OUT"
-        },
-        "/event/LightningUriEventStream": {
-            "replayId": -1,
-            "pattern": "At {payload.EventDate} {payload.Username} ({payload.UserId}) opened record w/ ID: {payload.RecordId}"
-        },
-        "/event/ListViewEventStream": true
-    }
-    Object.keys(streams).forEach(key => {
+	Object.keys(streams).forEach(key => {
 		const obj : object = (() => {
             if (typeof streams[key] === "object") return streams[key];
             return {

@@ -1,30 +1,50 @@
- <form class="form-inline">
-    <div class="form-group">
-        <label for="topic">Topic:&nbsp;</label>
-        <input type="text" class="form-control" id="topic">
-    </div>
-    <div class="col-md-4">
-        <button type="button" class="btn btn-primary btn-lg" id="play">
-            <span class="fa fa-play fa-1x color-white" aria-hidden="true"></span>
-        </button>
-        <button type="button" class="btn btn-primary btn-lg" id="pause">
-            <span class="fa fa-pause fa-1x color-white" aria-hidden="true"></span>
-        </button>
-    </div>
-</form>
+ <div class="row">
+     <div class="col-md-8">
+         
+     </div>
+     <div class="col-md-4">
+        <form class="form-inline">
+            <div class="form-group">
+                <label for="topic">Topic:&nbsp;</label>
+                <input type="text" class="form-control" id="topic">
+            </div>
+            <button type="button" class="ml-2 btn btn-primary btn-lg mr-2" id="plus">
+                <span class="fa fa-plus fa-1x color-white" aria-hidden="true"></span>
+            </button>
+            <button type="button" class="btn btn-primary btn-lg" id="play">
+                <span class="fa fa-play fa-1x color-white" aria-hidden="true"></span>
+            </button>
+            <button type="button" class="btn btn-primary btn-lg d-none" id="pause">
+                <span class="fa fa-pause fa-1x color-white" aria-hidden="true"></span>
+            </button>
+        </form>
+     </div>
+ </div>
+
 <div id="ws_events" class="mt-2"></div>
 
 <script>
     document.querySelector("#ws_events").addEventListener("click", (ev) => {
         handleEventClick(ev.target.id);
     })
+    document.querySelector("#plus").addEventListener("click", ev => {
+        const value = document.querySelector("#topic").value;
+        const topic = btoa(value);
+        fetch(`/api/subscribe/${topic}`).then(resp => resp.json()).then(obj => {
+            console.log(obj);
+        })
+        ev.preventDefault = true;
+    })
     document.querySelector("#play").addEventListener("click", ev => {
         setDisplayState("play");
+        ((ev.target.localName === "span") ? ev.target.parentElement : ev.target).classList.toggle("d-none");
+        document.querySelector("#pause").classList.toggle("d-none");    
         ev.preventDefault = true;
-        return false;
     })
     document.querySelector("#pause").addEventListener("click", ev => {
         setDisplayState("pause");
+        ((ev.target.localName === "span") ? ev.target.parentElement : ev.target).classList.toggle("d-none");
+        document.querySelector("#play").classList.toggle("d-none");    
         ev.preventDefault = true;
     })
     listenToWebSocket();

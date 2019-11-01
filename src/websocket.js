@@ -57,8 +57,11 @@ const WebSocketController = function(http) {
         });
     }, 10000);
 }
-WebSocketController.prototype.initializeStream = function(buildId) {
-    // prepare a message stream
+WebSocketController.prototype.getOrInitializeStream = function() {
+    // return existing if found
+    if (this.wrapper) return this.wrapper.stream;
+
+    // prepare a new message stream
     let stream = new StreamCache();
     this.wrapper = {
         'stream': stream
@@ -83,8 +86,7 @@ module.exports.createInstance = (http) => {
 }
 
 /**
- * Return the instance. This is used when we are building to get the websocket 
- * instance to configure it.
+ * Return the instance. This is used to get the websocket instance to configure it.
  */
 module.exports.getInstance = () => {
     return instance;
