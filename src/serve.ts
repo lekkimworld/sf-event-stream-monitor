@@ -75,6 +75,17 @@ app.use(passport.session());
 app.engine('handlebars', exphbs({defaultLayout: 'main'}));
 app.set('view engine', 'handlebars');
 
+// send to tls is production
+if (process.env.NODE_ENV === "production") {
+    app.use((req, res, next) => {
+        if (req.header('x-forwarded-proto') !== 'https') {
+            res.redirect(`https://${req.header('host')}${req.url}`);
+        } else {
+            next();
+        }
+    })
+}
+
 // handle connection back to salesforce
 app.use((req, res, next) => {
     //@ts-ignore
