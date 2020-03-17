@@ -3,21 +3,6 @@ let isPlaying = false;
 let eventsAll = [];
 let eventsShowing = [];
 
-const setDisplayState = (state) => {
-    isPlaying = (state === "play");
-    if (!isPlaying) eventsShowing = Array.from(eventsAll);
-    console.log(`State is now isPlaying: ${isPlaying}`);
-}
-
-const handleEventClick = (id) => {
-    eventsShowing.filter(ev => undefined !== ev).forEach(ev => {
-        if (id === `event_${ev.index}`) {
-            ev.isExpanded = !ev.isExpanded;
-        }
-    })
-    rebuildEventList();
-}
-
 const rebuildEventList = () => {
     const buildUIRepresentation = (obj) => {
         const attributes = obj.hasOwnProperty("attributes") ? Object.keys(obj.attributes).sort().reduce((buffer, key) => {
@@ -50,6 +35,27 @@ const rebuildEventList = () => {
 
     // show
     document.querySelector(`#${DOM_EVENTS_ELEMENT_ID}`).innerHTML = uiHTML;
+}
+
+const setDisplayState = (state) => {
+    isPlaying = (state === "play");
+    if (!isPlaying) eventsShowing = Array.from(eventsAll);
+    console.log(`State is now isPlaying: ${isPlaying}`);
+}
+
+const handleEventClick = (id) => {
+    eventsShowing.filter(ev => undefined !== ev).forEach(ev => {
+        if (id === `event_${ev.index}`) {
+            ev.isExpanded = !ev.isExpanded;
+        }
+    })
+    rebuildEventList();
+}
+
+const clearEvents = () => {
+    eventsAll = [];
+    eventsShowing = [];
+    rebuildEventList();
 }
 
 const listenToWebSocket = function(domid) {

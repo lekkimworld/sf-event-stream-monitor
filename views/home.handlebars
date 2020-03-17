@@ -1,8 +1,5 @@
  <div class="row">
-     <div class="col-md-8">
-         
-     </div>
-     <div class="col-md-4">
+     <div class="col-md-8 col-sm-12">
         <form class="form-inline">
             <div class="form-group">
                 <label for="topic">Topic:&nbsp;</label>
@@ -17,34 +14,61 @@
             <button type="button" class="btn btn-primary btn-lg d-none" id="pause">
                 <span class="fa fa-pause fa-1x color-white" aria-hidden="true"></span>
             </button>
+            <button type="button" class="ml-2 btn btn-primary btn-lg mr-2" id="clear">
+                <span class="fa fa-undo fa-1x color-white" aria-hidden="true"></span>
+            </button>
         </form>
      </div>
+     <div class="col-md-4 col-sm-12">
+         /event/ListViewEventStream<br/>
+         /event/LoginEventStream<br/>
+         /event/LoginAsEventStream<br/>
+         /event/LogoutEventStream<br/>
+         /event/ReportEventStream
+     </div>
  </div>
+
 
 <div id="ws_events" class="mt-2"></div>
 
 <script>
+    const actionPause = (ev) => {
+        setDisplayState("pause");
+        ((ev.target.localName === "span") ? ev.target.parentElement : ev.target).classList.toggle("d-none");
+        document.querySelector("#play").classList.toggle("d-none");    
+    }
+    const actionPlay = (ev) => {
+        setDisplayState("play");
+        ((ev.target.localName === "span") ? ev.target.parentElement : ev.target).classList.toggle("d-none");
+        document.querySelector("#pause").classList.toggle("d-none");    
+    }
+    const actionClear = () => {
+        clearEvents();
+    }
+    const actionSubscribe = eventName => {
+        const topic = btoa(eventName);
+        fetch(`/api/subscribe/${topic}`).then(resp => resp.json()).then(obj => {
+            console.log(obj);
+        })
+    }
     document.querySelector("#ws_events").addEventListener("click", (ev) => {
         handleEventClick(ev.target.id);
     })
     document.querySelector("#plus").addEventListener("click", ev => {
         const value = document.querySelector("#topic").value;
-        const topic = btoa(value);
-        fetch(`/api/subscribe/${topic}`).then(resp => resp.json()).then(obj => {
-            console.log(obj);
-        })
+        actionSubscribe(value);
         ev.preventDefault = true;
     })
     document.querySelector("#play").addEventListener("click", ev => {
-        setDisplayState("play");
-        ((ev.target.localName === "span") ? ev.target.parentElement : ev.target).classList.toggle("d-none");
-        document.querySelector("#pause").classList.toggle("d-none");    
+        actionPlay(ev);
         ev.preventDefault = true;
     })
     document.querySelector("#pause").addEventListener("click", ev => {
-        setDisplayState("pause");
-        ((ev.target.localName === "span") ? ev.target.parentElement : ev.target).classList.toggle("d-none");
-        document.querySelector("#play").classList.toggle("d-none");    
+        actionPause(ev);
+        ev.preventDefault = true;
+    })
+    document.querySelector("#clear").addEventListener("click", ev => {
+        actionClear();
         ev.preventDefault = true;
     })
     listenToWebSocket();
