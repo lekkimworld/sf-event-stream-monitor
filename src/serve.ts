@@ -14,22 +14,8 @@ import * as websocket from "./websocket.js";
 import * as jsforce from "jsforce";
 import uuid from "uuid/v1";
 import * as stringFormat from "string-format";
+import {defaultEvents, SalesforceEvent, getEventPayload} from "./salesforce-events";
 
-const streams = {
-    "/event/LoginEventStream": {
-        "replayId": -1,
-        "pattern": "At {payload.EventDate} {payload.Username} ({payload.UserId}) logged IN with a {payload.SessionLevel} session using {payload.Browser}"
-    },
-    "/event/LogoutEventStream": {
-        "replayId": -1,
-        "pattern": "At {payload.EventDate} {payload.Username} ({payload.UserId}) logged OUT"
-    },
-    "/event/LightningUriEventStream": {
-        "replayId": -1,
-        "pattern": "At {payload.EventDate} {payload.Username} ({payload.UserId}) opened record w/ ID: {payload.RecordId}"
-    },
-    "/event/ListViewEventStream": true
-}
 const sessionConnections = new Map<string,jsforce.Connection>();
 
 // read env variables from .env
@@ -152,14 +138,8 @@ app.get("/api/events", ensureLogin.ensureLoggedIn(), (req, res) => {
     const conn = sessionConnections.get(req.session.id);
 
 	// listen to topic and stream data to websocket
-	Object.keys(streams).forEach(key => {
-		const obj : object = (() => {
-            if (typeof streams[key] === "object") return streams[key];
-            return {
-                "replayId": -1,
-                "pattern": `At {payload.EventDate} {payload.Username} ({payload.UserId}) did something that caused an event in ${key}`
-            }
-		})()
+	Object.keys(defaultEvents).forEach(key => {
+		const obj = getEventPayload(key);
 		
 		//@ts-ignore
 		conn.streaming.topic(key).subscribe((msg:jsforce.StreamingMessage) => {

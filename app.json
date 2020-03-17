@@ -1,0 +1,27 @@
+{
+    "name": "Salesforce Event Stream Monitor",
+    "description": "Simple app to help demoing Salesforce Shield Event Monitoring ",
+    "website": "https://lekkimworld.com/",
+    "repository": "https://github.com/lekkimworld/sf-event-stream-monitor",
+    "env": {
+        "SF_CLIENT_ID": {
+            "description": "Client ID from the Salesforce Connected App",
+            "value": ""
+        },
+        "SF_CLIENT_SECRET": {
+            "description": "Client secret from the Salesforce Connected App",
+            "value": ""
+        },
+        "SF_INSTANCE_URL": {
+            "description": "The URL of the Salesforce instance you're running on (e.g. https://eu29.salesforce.com, see Company Info)",
+            "value": ""
+        },
+        "SF_CALLBACK_URL": {
+            "description": "Callback URL from the Salesforce Connected App",
+            "value": ""
+        }
+    },
+    "addons": [
+        "papertrail:choklad"
+    ]
+}
