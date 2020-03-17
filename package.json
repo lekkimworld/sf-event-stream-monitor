@@ -6,7 +6,7 @@
   "scripts": {
     "build": "npx grunt",
     "start": "node server-dist/serve.js",
-    "cli": "node server-dist/index.js",
+    "cli": "node server-dist/cli.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
