@@ -1,0 +1,15 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Run serve.ts (Typescript)",
+            "type": "node",
+            "request": "launch",
+            "args": ["${workspaceFolder}/src/serve.ts"],
+            "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
+            "sourceMaps": true,
+            "cwd": "${workspaceRoot}",
+            "protocol": "inspector",
+        }
+    ]
+}

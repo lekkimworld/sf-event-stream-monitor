@@ -1,8 +1,8 @@
 {
   "name": "salesforce-event-stream-monitor",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "",
-  "main": "index.js",
+  "main": "src/serve.ts",
   "scripts": {
     "build": "npx grunt",
     "start": "node server-dist/serve.js",
@@ -45,6 +45,7 @@
     "grunt-contrib-watch": "^1.1.0",
     "grunt-rework": "^0.1.0",
     "grunt-ts": "^6.0.0-beta.22",
+    "ts-node": "^8.6.2",
     "typescript": "^3.6.3"
   }
 }

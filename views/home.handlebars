@@ -27,7 +27,8 @@
          /event/ListViewEventStream<br/>
          <h4>Other event types</h4>
          /event/LoginAsEventStream<br/>
-         /event/ReportEventStream
+         /event/ReportEventStream<br/>
+         /event/ApiEventStream
      </div>
  </div>
 
@@ -51,7 +52,7 @@
     const actionSubscribe = eventName => {
         const topic = btoa(eventName);
         fetch(`/api/subscribe/${topic}`).then(resp => resp.json()).then(obj => {
-            console.log(obj);
+            if (obj.status === "ok") $("#topic").val("");
         })
     }
     document.querySelector("#ws_events").addEventListener("click", (ev) => {

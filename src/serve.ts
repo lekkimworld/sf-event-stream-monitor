@@ -112,6 +112,14 @@ app.get("/home", ensureLogin.ensureLoggedIn(), (req, res) => {
     return res.render("home", {"user": req.user});
 });
 
+app.get("/api", ensureLogin.ensureLoggedIn(), (req, res) => {
+    return res.render("api", {"user": req.user});
+});
+
+app.get("/about", ensureLogin.ensureLoggedIn(), (req, res) => {
+    return res.render("about", {"user": req.user});
+});
+
 app.get("/api/subscribe/:topic", ensureLogin.ensureLoggedIn(), (req, res) => {
     const topic = Buffer.from(req.params.topic, "base64").toString();
 
