@@ -1,0 +1,63 @@
+<div class="row">
+     <div class="col-12">
+         <h1>Stored Events</h1>
+    </div>
+</div>
+ <div class="row">
+     <div class="col-md-8 col-sm-12">
+         <span class="dropdown">
+            <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuEvent" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                Event Type
+            </button>
+            <div class="dropdown-menu" aria-labelledby="dropdownMenuEvent" id="dropdown_event">
+                <a class="dropdown-item" href="javascript:void(0)">LoginEvent</a>
+                <a class="dropdown-item" href="javascript:void(0)">LogoutEvent</a>
+                <a class="dropdown-item" href="javascript:void(0)">LightningUriEvent</a>
+                <a class="dropdown-item" href="javascript:void(0)">ListViewEvent</a>
+                <a class="dropdown-item" href="javascript:void(0)">ApiEvent</a>
+            </div>
+        </span>
+        <span class="dropdown">
+            <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuLimit" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                Record Count
+            </button>
+            <div class="dropdown-menu" aria-labelledby="dropdownMenuLimit" id="dropdown_limit">
+                <a class="dropdown-item" href="javascript:void(0)">10</a>
+                <a class="dropdown-item" href="javascript:void(0)">25</a>
+                <a class="dropdown-item" href="javascript:void(0)">50</a>
+                <a class="dropdown-item" href="javascript:void(0)">100</a>
+                <a class="dropdown-item" href="javascript:void(0)">200</a>
+                <a class="dropdown-item" href="javascript:void(0)">500</a>
+            </div>
+        </span>
+     </div>
+     <div class="col-md-4 col-sm-12">
+        <strong>Selected Event:</strong> <span id="selected_event">None</span> <br/>
+        <strong>Limit:</strong> <span id="selected_limit">10</span>
+     </div>
+ </div>
+<div id="ws_events"></div>
+
+<script>
+    let limit = 100;
+    let eventName = undefined;
+
+    const loadEvents = () => {
+        $("#selected_event").text(eventName);
+        $("#selected_limit").text(limit);
+        fetchStoredEvents(eventName, limit).then(data => {
+            const mapped = mapStoredEvents(data);
+            rebuildExpandableElementsFromData(mapped);
+        })
+    }
+    $("#dropdown_event").on("click", ev => {
+        eventName = ev.target.innerText;
+        loadEvents();
+    });
+    $("#dropdown_limit").on("click", ev => {
+        limit = ev.target.innerText;
+        loadEvents();
+    });
+    addExpandableElementsClickHandler();
+    
+</script>

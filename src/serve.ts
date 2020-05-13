@@ -80,7 +80,8 @@ app.use((req, res, next) => {
         const connection = new jsforce.Connection({
             //@ts-ignore
             "accessToken": req.user.oauth.accessToken,
-            "instanceUrl": process.env.SF_INSTANCE_URL
+            "instanceUrl": process.env.SF_INSTANCE_URL,
+            "version": "48.0"
         });
         sessionConnections.set(req.session.id, connection);
     }
@@ -110,6 +111,14 @@ app.get("/", (req, res) => {
 
 app.get("/home", ensureLogin.ensureLoggedIn(), (req, res) => {
     return res.render("home", {"user": req.user});
+});
+
+app.get("/streaming-events", ensureLogin.ensureLoggedIn(), (req, res) => {
+    return res.render("streaming-events", {"user": req.user});
+});
+
+app.get("/stored-events", ensureLogin.ensureLoggedIn(), (req, res) => {
+    return res.render("stored-events", {"user": req.user});
 });
 
 app.get("/about", ensureLogin.ensureLoggedIn(), (req, res) => {
@@ -155,6 +164,57 @@ app.get("/api/events", ensureLogin.ensureLoggedIn(), (req, res) => {
 	// return to caller
 	res.type("json");
 	return res.send({"status": "success"});
+})
+
+app.get("/api/stored-events/:eventName/:limit?", ensureLogin.ensureLoggedIn(), (req, res) => {
+    // get params
+    const eventName = req.params.eventName;
+    const limit = req.params.limit || 100; 
+
+    const conn = sessionConnections.get(req.session!.id);
+    new Promise((resolve, reject) => {
+        const data : any = {
+            "LoginEvent": ["ApiType", "Application", "City", "Country", "Browser", "LoginType", "TlsProtocol", "Id", "LoginUrl", "UserId", "Username"],
+            "LogoutEvent": ["LoginKey", "SessionLevel", "SourceIp", "UserId", "Username"],
+            "ListViewEvent": ["UserId", "Username", "RowsProcessed", "AppName", "ColumnHeaders", "DeveloperName", "FilterCriteria", "ListViewId", "Records"]
+        }
+        if (!Object.keys(data).includes(eventName)) return reject(Error(`Unsupported eventName <${eventName}>`));
+
+        const fields : Array<string> = data[eventName];
+        if (!fields.includes("EventDate")) fields.push("EventDate");
+        if (!fields.includes("EventIdentifier")) fields.push("EventIdentifier");
+        
+        resolve({
+            fields,
+            "query": `SELECT ${fields.join(",")} FROM ${eventName} ORDER BY EventDate DESC LIMIT ${limit}`
+        })
+
+    }).then((queryObj : any) => {
+        
+        conn!.query(queryObj.query, undefined, (err : Error, result : any) => {
+            if (err) return res.type("json").status(500).send({"error": true, "query": queryObj.query, "message": err.message});
+            queryObj.data = result;
+            res.type("json").send(queryObj);
+        })
+
+    }).catch(err => {
+        res.type("json").status(500).send({"error": true, "message": err.message});
+    })
+})
+
+
+app.get("/api/describe/:eventName", ensureLogin.ensureLoggedIn(), (req, res) => {
+    // get params
+    const eventName = req.params.eventName;
+
+    const conn = sessionConnections.get(req.session!.id);
+    conn!.describe(eventName).then(data => {
+        res.type("json").send(data);
+    })
+})
+
+app.get("/api/user", ensureLogin.ensureLoggedIn(), (req, res) => {
+    res.type("json").send(req.user);
 })
 
 // listen
