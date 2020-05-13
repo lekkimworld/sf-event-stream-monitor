@@ -17,6 +17,19 @@ import * as stringFormat from "string-format";
 import {defaultEvents, SalesforceEvent, getEventPayload} from "./salesforce-events";
 
 const sessionConnections = new Map<string,jsforce.Connection>();
+const supportedStoredEvents : any = {
+    "LoginEvent": ["ApiType", "Application", "City", "Country", "Browser", "LoginType", "TlsProtocol", "Id", "LoginUrl"],
+    "LogoutEvent": ["LoginKey", "SessionLevel", "SourceIp"],
+    "ListViewEvent": ["RowsProcessed", "AppName", "ColumnHeaders", "DeveloperName", "FilterCriteria", "ListViewId", "Records"],
+    "ApiEvent": [],
+    "CredentialStuffingEventStore": [],
+    "IdentityVerificationEvent": [],
+    "LoginAsEvent": [],
+    "ReportAnomalyEventStore": [],
+    "ReportEvent": [],
+    "SessionHijackingEventStore": [],
+    "UriEvent": []
+}
 
 // read env variables from .env
 dotenv.config();
@@ -166,6 +179,10 @@ app.get("/api/events", ensureLogin.ensureLoggedIn(), (req, res) => {
 	return res.send({"status": "success"});
 })
 
+app.get("/api/stored-events", ensureLogin.ensureLoggedIn(), (req, res) => {
+    res.type("json").send(Object.keys(supportedStoredEvents));
+})
+
 app.get("/api/stored-events/:eventName/:limit?", ensureLogin.ensureLoggedIn(), (req, res) => {
     // get params
     const eventName = req.params.eventName;
@@ -173,16 +190,12 @@ app.get("/api/stored-events/:eventName/:limit?", ensureLogin.ensureLoggedIn(), (
 
     const conn = sessionConnections.get(req.session!.id);
     new Promise((resolve, reject) => {
-        const data : any = {
-            "LoginEvent": ["ApiType", "Application", "City", "Country", "Browser", "LoginType", "TlsProtocol", "Id", "LoginUrl", "UserId", "Username"],
-            "LogoutEvent": ["LoginKey", "SessionLevel", "SourceIp", "UserId", "Username"],
-            "ListViewEvent": ["UserId", "Username", "RowsProcessed", "AppName", "ColumnHeaders", "DeveloperName", "FilterCriteria", "ListViewId", "Records"]
-        }
-        if (!Object.keys(data).includes(eventName)) return reject(Error(`Unsupported eventName <${eventName}>`));
+        if (!Object.keys(supportedStoredEvents).includes(eventName)) return reject(Error(`Unsupported eventName <${eventName}>`));
 
-        const fields : Array<string> = data[eventName];
-        if (!fields.includes("EventDate")) fields.push("EventDate");
-        if (!fields.includes("EventIdentifier")) fields.push("EventIdentifier");
+        const fields : Array<string> = supportedStoredEvents[eventName];
+        ["EventIdentifier", "EventDate", "UserId", "Username"].forEach(f => {
+            if (!fields.includes(f)) fields.push(f);
+        })
         
         resolve({
             fields,

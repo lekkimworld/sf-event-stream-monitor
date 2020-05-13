@@ -10,11 +10,6 @@
                 Event Type
             </button>
             <div class="dropdown-menu" aria-labelledby="dropdownMenuEvent" id="dropdown_event">
-                <a class="dropdown-item" href="javascript:void(0)">LoginEvent</a>
-                <a class="dropdown-item" href="javascript:void(0)">LogoutEvent</a>
-                <a class="dropdown-item" href="javascript:void(0)">LightningUriEvent</a>
-                <a class="dropdown-item" href="javascript:void(0)">ListViewEvent</a>
-                <a class="dropdown-item" href="javascript:void(0)">ApiEvent</a>
             </div>
         </span>
         <span class="dropdown">
@@ -30,6 +25,7 @@
                 <a class="dropdown-item" href="javascript:void(0)">500</a>
             </div>
         </span>
+        <button class="btn btn-primary" id="btn_refresh">Refresh</button>
      </div>
      <div class="col-md-4 col-sm-12">
         <strong>Selected Event:</strong> <span id="selected_event">None</span> <br/>
@@ -45,11 +41,19 @@
     const loadEvents = () => {
         $("#selected_event").text(eventName);
         $("#selected_limit").text(limit);
+        if (!eventName) return;
         fetchStoredEvents(eventName, limit).then(data => {
             const mapped = mapStoredEvents(data);
-            rebuildExpandableElementsFromData(mapped);
+            if (!mapped.length) {
+                $("#ws_events").html(`Found 0 records for ${eventName} - is the event marked for storage?`);
+            } else {
+                rebuildExpandableElementsFromData(mapped);
+            }
         })
     }
+    $("#btn_refresh").on("click", () => {
+        loadEvents();
+    })
     $("#dropdown_event").on("click", ev => {
         eventName = ev.target.innerText;
         loadEvents();
@@ -58,6 +62,12 @@
         limit = ev.target.innerText;
         loadEvents();
     });
-    addExpandableElementsClickHandler();
-    
+
+    fetch("/api/stored-events").then(res => res.json()).then(events => {
+        const elem = $("#dropdown_event");
+        const html = events.sort().map(e => `<a class="dropdown-item" href="javascript:void(0)">${e}</a>`);
+        elem.html(html);
+
+        addExpandableElementsClickHandler();
+    })
 </script>
