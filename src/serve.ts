@@ -54,7 +54,17 @@ app.use(passport.initialize());
 passport.use(new Strategy({
     "clientID": process.env.SF_CLIENT_ID,
     "clientSecret": process.env.SF_CLIENT_SECRET,
-    "callbackURL": process.env.SF_CALLBACK_URL
+    "callbackURL": process.env.SF_CALLBACK_URL,
+    "authorizationURL": (function() {
+        if (process.env.SF_MYDOMAIN) return `https://${process.env.SF_MYDOMAIN}.my.salesforce.com/services/oauth2/authorize`;
+        if (process.env.SF_SANDBOX) return `https://test.salesforce.com/services/oauth2/authorize`;
+        return `https://login.salesforce.com/services/oauth2/authorize`;
+    })(),
+    "tokenURL": (function() {
+        if (process.env.SF_MYDOMAIN) return `https://${process.env.SF_MYDOMAIN}.my.salesforce.com/services/oauth2/token`;
+        if (process.env.SF_SANDBOX) return `https://test.salesforce.com/services/oauth2/token`;
+        return `https://login.salesforce.com/services/oauth2/token`;
+    })()
 }, (accessToken : string, refreshToken : string, profile : object, done : (err:Error|undefined, profile:object|undefined) => {}) => {
 	//@ts-ignore
 	profile.oauth = {
